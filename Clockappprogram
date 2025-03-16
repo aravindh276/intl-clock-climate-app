@@ -1,0 +1,64 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const cities = [
+  { name: "New York", timezone: "America/New_York" },
+  { name: "London", timezone: "Europe/London" },
+  { name: "Tokyo", timezone: "Asia/Tokyo" },
+  { name: "Sydney", timezone: "Australia/Sydney" },
+  { name: "Bangalore", timezone: "Asia/Kolkata" },
+];
+
+export default function App() {
+  const [selectedCity, setSelectedCity] = useState(cities[0]);
+  const [time, setTime] = useState('');
+  const [weather, setWeather] = useState(null);
+
+  useEffect(() => {
+    fetchTime(selectedCity.timezone);
+    fetchWeather(selectedCity.name);
+    const timer = setInterval(() => fetchTime(selectedCity.timezone), 60000);
+    return () => clearInterval(timer);
+  }, [selectedCity]);
+
+  const fetchTime = async (timezone) => {
+    const res = await axios.get(`https://worldtimeapi.org/api/timezone/${timezone}`);
+    setTime(new Date(res.data.datetime).toLocaleTimeString());
+  };
+
+  const fetchWeather = async (city) => {
+    const apiKey = 'YOUR_OPENWEATHERMAP_API_KEY';
+    const res = await axios.get(
+      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
+    );
+    setWeather(res.data);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">
+      <div className="bg-white shadow-xl rounded-2xl p-6 w-96">
+        <h1 className="text-2xl font-bold mb-4">International Clock & Climate</h1>
+        <select
+          className="border rounded-lg p-2 mb-4 w-full"
+          onChange={(e) => setSelectedCity(cities.find(city => city.name === e.target.value))}
+          value={selectedCity.name}
+        >
+          {cities.map((city) => (
+            <option key={city.name} value={city.name}>{city.name}</option>
+          ))}
+        </select>
+
+        <div className="text-xl font-semibold">Current Time: {time}</div>
+
+        {weather && (
+          <div className="mt-4">
+            <div className="text-lg font-semibold">Weather: {weather.weather[0].description}</div>
+            <div>Temperature: {weather.main.temp} °C</div>
+            <div>Humidity: {weather.main.humidity}%</div>
+            <div>Wind Speed: {weather.wind.speed} m/s</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
