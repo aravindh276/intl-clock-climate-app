@@ -1,0 +1,6 @@
+git init
+git add .
+git commit -m "Deploying Intl Clock Climate App"
+git remote add origin git@github.com:aravindh276/intl-clock-climate-app.git
+git branch -M main
+git push -u origin main
